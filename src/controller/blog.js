@@ -40,6 +40,7 @@ const updateBlog = (blogData = {}) => {
     
     return false
 }
+// 删除博客 id
 const delBlog = (blogData = {}) => {
     return true
 }

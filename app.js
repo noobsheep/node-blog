@@ -16,7 +16,7 @@ const postDataHandle = (req) => {
         })
         req.on('end', () => {
             if (postData) {
-                resolve(postData)
+                resolve(JSON.parse(postData))
             } else {
                 resolve({})
             }
