@@ -6,7 +6,13 @@ const querystring = require('querystring')
 // 处理post参数
 const postDataHandle = (req) => {
     const promise = new Promise((resolve, reject) => {
-        if (req.method !== 'POST' && req.header['Content-type'] !== 'application/json') {
+        if (req.method !== 'POST') {
+            resolve({})
+            return
+        }
+        // req.method !== 'POST' && req.header['Content-type'] !== 'application/json'
+        // content type 在get请求中可有可无 
+        if (req.header['Content-type'] !== 'application/json') {
             resolve({})
             return
         }
@@ -43,7 +49,9 @@ const serverHandle = (request, response) => {
         // 处理 blog 路由
         const blogHandleInfo = blogRouterHandle(request, response)
         if (blogHandleInfo) {
-            response.end(JSON.stringify(blogHandleInfo))
+            blogHandleInfo.then((blogHandleData) => {
+                response.end(JSON.stringify(blogHandleData))
+            })
             return
         }
 

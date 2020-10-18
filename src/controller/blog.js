@@ -1,21 +1,18 @@
+const { exec } = require('../db/mysql')
 // 获取列表
 const getList = (author, keyword) => {
-    return [
-        {
-            id: 1,
-            title: '标题1',
-            content: '内容A',
-            createTime: 1598166607647,
-            aothor: 'zhangyi'
-        },
-        {
-            id: 2,
-            title: '标题1',
-            content: '内容A',
-            createTime: 1598166607647,
-            aothor: 'zhangyi'
-        }
-    ]
+    // select 字段名（*为全部字段） from 表名 (可以同时查询多个表) where 条件...
+    // 多个字段之间使用逗号分割 
+    let sql = `select id, title, content, createtime, author from blogs where 1=1 `
+    if (author) {
+        sql += `and author='${author}' `
+    }
+    if (keyword) {
+        sql += `and title like '%${keyword}%' `
+    }
+    sql += `order by createtime desc;`
+    // 返回 promise 对象
+    return exec(sql)
 }
 // 获取详情
 const getDetail = (id) => {

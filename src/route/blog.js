@@ -2,13 +2,18 @@ const { getList, getDetail, addBlog, updateBlog, delBlog } = require('../control
 const { SuccessModel, ErrorModel } = require('../model/resModel')
 
 
-const bolgHandle = (req, res) => {
+function bolgHandle (req, res) {
     // 博客列表 get
     if (req.method === 'GET' && req.path === '/api/blog/list') {
         const author = req.query.author || ''
         const keyword = req.query.keyword || ''
-        const blogList = getList(author, keyword)
-        return new SuccessModel(blogList)
+        // const blogList = await getList(author, keyword)
+        const result = getList(author, keyword)
+        return result.then((blogList) => {
+            return new SuccessModel(blogList)
+        }).catch(() => {
+            return new ErrorModel("查询错误")
+        })
     }
     // 博客详情 get
     if (req.method === 'GET' && req.path === '/api/blog/detail') {

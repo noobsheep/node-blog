@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cross-env NODE_ENV=dev nodemon ./bin/www.js",
-    "start": "cross-env NODE_ENV=production node ./bin/www.js"
+    "start": "cross-env NODE_ENV=production nodemon ./bin/www.js"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,8 @@
   "homepage": "https://github.com/noobsheep/node-blog#readme",
   "devDependencies": {
     "cross-env": "^7.0.2"
+  },
+  "dependencies": {
+    "mysql": "^2.18.1"
   }
 }
