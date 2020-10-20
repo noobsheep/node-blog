@@ -14,32 +14,45 @@ const getList = (author, keyword) => {
     // 返回 promise 对象
     return exec(sql)
 }
+
 // 获取详情
 const getDetail = (id) => {
-    return {
-        id: 2,
-        title: '标题1',
-        content: '内容A',
-        createTime: 1598166607647,
-        aothor: 'zhangyi'
-    }
+    const sql = `select * from blogs where id='${id}';`
+    return exec(sql).then((result) => {
+        return result[0]
+    })
 }
 
 // 新增博客 title content author
 const addBlog = (blogData = {}) => {
-
-    return {
-        id: 3 // 表示插到表里的id
-    }
+    const { title, content, author } = blogData
+    const createtime = Date.now();
+    //插入 insert into 表名 (插入字段ming 多个字段名之间,号连接)
+    const sql = `insert into blogs ( title, content, createtime, author )
+        value ( '${title}', '${content}', ${createtime}, '${author}');`
+    return exec(sql).then((result) => {
+        console.log(result, 'result info ...')
+        return {
+            id: result.insertId
+        }
+    })
 }
+
 // 修改博客 id title content author
-const updateBlog = (blogData = {}) => {
-    
-    return false
+const updateBlog = (id, blogData = {}) => {
+    const { title, content, author } = blogData
+    const createtime = Date.now();
+    const sql = `update blogs set title='${title}', content='${content}',createtime='${createtime}' , author='${author}' where id=${id};`
+    return exec(sql).then((result) => {
+        return true
+    })
 }
 // 删除博客 id
-const delBlog = (blogData = {}) => {
-    return true
+const delBlog = (id, author) => {
+    const sql = `deletes from blogs where id=${id} and author='${author}';`
+    return exec(sql).then((result) => {
+        return true
+    })
 }
 module.exports = { 
     getList,

@@ -12,12 +12,9 @@ connection.connect()
 function exec(sql) {
     const promise = new Promise((resolve, reject) => {
         connection.query(sql, (err, results) => { // (错误优先的回调函数)
-            console.log(results);
             if (err) {
-                console.error(err)
                 reject(err)
             } else {
-                console.log(results)
                 resolve(results)
             }
         })

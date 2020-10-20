@@ -11,8 +11,8 @@ const postDataHandle = (req) => {
             return
         }
         // req.method !== 'POST' && req.header['Content-type'] !== 'application/json'
-        // content type 在get请求中可有可无 
-        if (req.header['Content-type'] !== 'application/json') {
+        // content type 在get请求中可有可无
+        if (req.headers['content-type'] !== 'application/json') {
             resolve({})
             return
         }
