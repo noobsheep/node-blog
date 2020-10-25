@@ -58,7 +58,9 @@ const serverHandle = (request, response) => {
         // 处理 user 路由
         const userHandleInfo = userRouterHandle(request, response)
         if (userHandleInfo) {
-            response.end(JSON.stringify(userHandleInfo))
+            userHandleInfo.then((userInfo) => {
+                response.end(JSON.stringify(userInfo))
+            })
             return
         }
 
