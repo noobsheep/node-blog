@@ -54,6 +54,7 @@ const delBlog = (id, author) => {
         return true
     })
 }
+
 module.exports = { 
     getList,
     getDetail,
