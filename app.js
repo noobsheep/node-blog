@@ -39,6 +39,17 @@ const serverHandle = (request, response) => {
     request.path = path[0]
     request.type = process.env.NODE_ENV
 
+    // 处理cookie
+    request.cookie = {}
+    const cookieStr = request.headers.cookie || ''
+    cookieStr.split(";").forEach((item) => {
+        if (!item) {
+            return
+        }
+        const info = item.split("=")
+        request.cookie[info[0]] = info[1];
+    })
+    console.log(request.cookie, 'cookie');
     // 设置返回类型
     // Conten 打成了Cotent 返回内容类型错误 导致返回数据乱码.. 上个星期
     response.setHeader("Content-Type", "application/json; charset=UTF-8")
