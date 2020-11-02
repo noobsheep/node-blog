@@ -1,7 +1,11 @@
 const blogRouterHandle = require('./src/route/blog.js')
 const userRouterHandle = require('./src/route/user.js')
+const { setCookieExpires } = require('./src/utils/utils')
 const querystring = require('querystring')
 
+
+// session 数据
+const sessionData = new Map()
 
 // 处理post参数
 const postDataHandle = (req) => {
@@ -50,8 +54,25 @@ const serverHandle = (request, response) => {
         request.cookie[info[0]] = info[1];
     })
     console.log(request.cookie, 'cookie');
+
+    // 解析 session
+    let needCookie = false
+    let token = request.cookie.token
+    if (token) {
+        if (!sessionData.get(token)) {
+            sessionData.set(token, {})
+        }   
+    } else {
+        // Math.random() 返回的随机数 包括0 不包括1 (0 <= num < 1)
+        needCookie = true
+        token = `${Date.now()}_${Math.random()}`
+        sessionData.set(token, {})
+    }
+    console.log(sessionData.entries())
+    request.session = sessionData.get(token)
+
     // 设置返回类型
-    // Conten 打成了Cotent 返回内容类型错误 导致返回数据乱码.. 上个星期
+    // Content 打成了Cotent 返回内容类型错误 导致返回数据乱码.. 上个星期
     response.setHeader("Content-Type", "application/json; charset=UTF-8")
     // POST 处理
     postDataHandle(request).then((postData) => {
@@ -61,6 +82,9 @@ const serverHandle = (request, response) => {
         const blogHandleInfo = blogRouterHandle(request, response)
         if (blogHandleInfo) {
             blogHandleInfo.then((blogHandleData) => {
+                if (needCookie) {
+                    response.setHeader('Set-Cookie', `token=${token};path=/;expires=${setCookieExpires(7)}; httpOnly`)
+                }
                 response.end(JSON.stringify(blogHandleData))
             })
             return
@@ -70,6 +94,9 @@ const serverHandle = (request, response) => {
         const userHandleInfo = userRouterHandle(request, response)
         if (userHandleInfo) {
             userHandleInfo.then((userInfo) => {
+                if (needCookie) {
+                    response.setHeader('Set-Cookie', `token=${token};path=/;expires=${setCookieExpires(7)}; httpOnly`)
+                }
                 response.end(JSON.stringify(userInfo))
             })
             return
