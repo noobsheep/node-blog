@@ -1,11 +1,9 @@
 const blogRouterHandle = require('./src/route/blog.js')
 const userRouterHandle = require('./src/route/user.js')
 const { setCookieExpires } = require('./src/utils/utils')
+const { get, set } = require('./src/db/redis.js')
 const querystring = require('querystring')
 
-
-// session 数据
-const sessionData = new Map()
 
 // 处理post参数
 const postDataHandle = (req) => {
@@ -14,8 +12,10 @@ const postDataHandle = (req) => {
             resolve({})
             return
         }
+
         // req.method !== 'POST' && req.header['Content-type'] !== 'application/json'
-        // content type 在get请求中可有可无
+        // content type 在get请求中可有可无 
+
         if (req.headers['content-type'] !== 'application/json') {
             resolve({})
             return
@@ -58,24 +58,32 @@ const serverHandle = (request, response) => {
     // 解析 session
     let needCookie = false
     let token = request.cookie.token
-    if (token) {
-        if (!sessionData.get(token)) {
-            sessionData.set(token, {})
-        }   
-    } else {
-        // Math.random() 返回的随机数 包括0 不包括1 (0 <= num < 1)
+    if (!token) {
         needCookie = true
         token = `${Date.now()}_${Math.random()}`
-        sessionData.set(token, {})
+        // Math.random() 返回的随机数 包括0 不包括1 (0 <= num < 1) 
     }
-    console.log(sessionData.entries())
-    request.session = sessionData.get(token)
+    request.cookie.token = token
+    get(token).then((sessionData) => {
+        console.log(sessionData, 'session')
+        if (!sessionData) {
+            set(token, {})
+            request.session = {}
+        } else {
+            request.session = sessionData
+        }
+          // POST 处理
+        return  postDataHandle(request)
+    }).catch((err) => {
+        console.log(err)
+        request.session = {}
+    }).then((postData) => {
+    // console.log(sessionData.entries())
+    // request.session = sessionData.get(token)
 
     // 设置返回类型
     // Content 打成了Cotent 返回内容类型错误 导致返回数据乱码.. 上个星期
     response.setHeader("Content-Type", "application/json; charset=UTF-8")
-    // POST 处理
-    postDataHandle(request).then((postData) => {
         request.body = postData
         
         // 处理 blog 路由

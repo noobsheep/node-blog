@@ -2,6 +2,7 @@ const { login } = require('../controller/user')
 const { SuccessModel, ErrorModel } = require('../model/resModel')
 const { setCookieExpires } = require('../utils/utils')
 
+const { get, set } = require('../db/redis.js')
 const userHandle = (req, res) => {
     // 登录接口
     if (req.method === 'GET' && req.path === '/api/user/login') {
@@ -9,8 +10,12 @@ const userHandle = (req, res) => {
         const loginInfo = login(req.query.username, req.query.password)
         return loginInfo.then((result) => {
             if (result) {
-                req.session.username = result.username
-                req.session.realname = result.realname
+                set(req.cookie.token, {
+                    username: result.username,
+                    realname: result.realname,
+                })
+                // req.session.username = result.username
+                // req.session.realname = result.realname
                 // 操作cookie
                 // res.setHeader('Set-Cookie', `token=${result.realname};path=/;expires=${setCookieExpires(7)}; httpOnly`)
                 return new SuccessModel('认证成功')
