@@ -1,22 +1,24 @@
 const blogRouterHandle = require('./src/route/blog.js')
-const userRouterHandle = require('./src/route/user.js')
+const { userRouterHandle } = require('./src/route/user.js')
 const { setCookieExpires } = require('./src/utils/utils')
 const { get, set } = require('./src/db/redis.js')
 const querystring = require('querystring')
+const { accessLog } = require('./src/utils/log')
 
 
 // 处理post参数
 const postDataHandle = (req) => {
+    // console.log(req, 'req,10')
     const promise = new Promise((resolve, reject) => {
         if (req.method !== 'POST') {
             resolve({})
             return
         }
-
         // req.method !== 'POST' && req.header['Content-type'] !== 'application/json'
         // content type 在get请求中可有可无 
 
-        if (req.headers['content-type'] !== 'application/json') {
+        if (req.headers['content-type'] !== 'application/json' && req.headers['content-type'] !== 'multipart/form-data') {
+            console.log('111', req.headers['content-type'])
             resolve({})
             return
         }
@@ -37,7 +39,15 @@ const postDataHandle = (req) => {
 }
 
 const serverHandle = (request, response) => {
-    // 处理参数
+    accessLog( `${request.method}-${request.url}-${request.headers['user-agent']}-${new Date().toLocaleString()}`);
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    // response.setHeader("Access-Control-Allow-Credentials", "true");
+    // response.setHeader("Access-Control-Allow-Methods", "GET,POST,POST,OPTIONS");
+    // if (request.method === 'OPTIONS') {
+    //     response.end()
+    //     return
+    // }
+    // 处理参数 query
     const path = request.url.split('?')
     request.query = querystring.parse(path[1])
     request.path = path[0]
@@ -73,17 +83,19 @@ const serverHandle = (request, response) => {
             request.session = sessionData
         }
           // POST 处理
-        return  postDataHandle(request)
+        return postDataHandle(request);
     }).catch((err) => {
-        console.log(err)
+        console.log(err,'err')
         request.session = {}
+        return postDataHandle(request);
     }).then((postData) => {
+        // console.log(postData, 'postData');
     // console.log(sessionData.entries())
     // request.session = sessionData.get(token)
 
     // 设置返回类型
     // Content 打成了Cotent 返回内容类型错误 导致返回数据乱码.. 上个星期
-    response.setHeader("Content-Type", "application/json; charset=UTF-8")
+        response.setHeader("Content-Type", "application/json; charset=UTF-8")
         request.body = postData
         
         // 处理 blog 路由
@@ -100,6 +112,7 @@ const serverHandle = (request, response) => {
 
         // 处理 user 路由
         const userHandleInfo = userRouterHandle(request, response)
+        // console.log(userHandleInfo);
         if (userHandleInfo) {
             userHandleInfo.then((userInfo) => {
                 if (needCookie) {

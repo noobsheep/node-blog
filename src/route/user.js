@@ -1,14 +1,16 @@
 const { login } = require('../controller/user')
 const { SuccessModel, ErrorModel } = require('../model/resModel')
-const { setCookieExpires } = require('../utils/utils')
 
 const { get, set } = require('../db/redis.js')
-const userHandle = (req, res) => {
+const userRouterHandle = (req, res) => {
     // 登录接口
-    if (req.method === 'GET' && req.path === '/api/user/login') {
-        // const loginInfo = login(req.body.username, req.body.password)
-        const loginInfo = login(req.query.username, req.query.password)
+    // console.log('userRouterHandle')
+    if (req.method === 'POST' && req.path === '/api/user/login') {
+        const loginInfo = login(req.body.username, req.body.password)
+        // console.log(req.body.username, req.body.password, 'body')
+        // const loginInfo = login(req.query.username, req.query.password)
         return loginInfo.then((result) => {
+            // console.log(result, 'result');
             if (result) {
                 set(req.cookie.token, {
                     username: result.username,
@@ -25,20 +27,30 @@ const userHandle = (req, res) => {
         }).catch((err) => {
             return new ErrorModel(err.sqlMessage || err.message)
         })
-    }
-
-    // 新定义验证登录接口
-    if (req.method === 'GET' && req.path === '/api/user/loginCheck') {
+    } else if (req.method === 'GET' && req.path === '/api/user/signout') {
         return new Promise((resolve, reject) => {
-            if (req.session.username) {
-                resolve(new SuccessModel(req.session))
+            if (req.cookie.token) {
+                set(req.cookie.token, {});
+                resolve(new SuccessModel('退出成功'));
             } else {
-                resolve(new ErrorModel('未登录'))
+                reject(new SuccessModel('退出失败'));
             }
-        }).catch((err) => {
-            return new ErrorModel(err.sqlMessage || err.message)
+        });
+    }
+}
+
+const loginCheck = (req, res) => {
+    // 新定义验证登录接口 
+    if (!req.session.username) {
+        return new Promise((resovle, reject) => {
+            resovle(new ErrorModel("未登录"))
         })
     }
 }
 
-module.exports = userHandle
+
+
+module.exports = {
+    userRouterHandle,
+    loginCheck,
+}

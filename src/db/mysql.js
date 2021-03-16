@@ -1,5 +1,6 @@
 const msyql = require('mysql')
 const { MYSQL_Config } = require('../config/dbConfig')
+// escape 调用escape 方法防止sql注入 
 
 // 创建连接对象
 let connection = msyql.createConnection(MYSQL_Config)
@@ -26,7 +27,8 @@ function exec(sql) {
 // connection.end();
 
 module.exports = {
-    exec
+    exec,
+    escape: msyql.escape,
 }
 
 

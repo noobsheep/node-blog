@@ -1,10 +1,12 @@
 const { getList, getDetail, addBlog, updateBlog, delBlog } = require('../controller/blog.js')
+const { loginCheck } = require('../route/user.js')
 const { SuccessModel, ErrorModel } = require('../model/resModel')
 
 
 function bolgHandle (req, res) {
     // 博客列表 get
     if (req.method === 'GET' && req.path === '/api/blog/list') {
+        if (loginCheck(req, res)) return loginCheck(req, res);
         const author = req.query.author || ''
         const keyword = req.query.keyword || ''
         // const blogList = await getList(author, keyword)
@@ -17,6 +19,7 @@ function bolgHandle (req, res) {
     }
     // 博客详情 get
     if (req.method === 'GET' && req.path === '/api/blog/detail') {
+        if (loginCheck(req, res)) return loginCheck(req, res);
         const id = req.query.id
         const result = getDetail(id)
         return result.then((blogDetail) => {
@@ -25,6 +28,7 @@ function bolgHandle (req, res) {
     }
     // 新建一篇博客 
     if (req.method === 'POST' && req.path === '/api/blog/new') {
+        if (loginCheck(req, res)) return loginCheck(req, res);
         const data = req.body
         // console.log(JSON.parse(req.body), '结果')
         const result = addBlog(data)
@@ -34,6 +38,7 @@ function bolgHandle (req, res) {
     }
     // 更新一篇博客得接口
     if (req.method === 'POST' && req.path === '/api/blog/update') {
+        if (loginCheck(req, res)) return loginCheck(req, res);
         const {id, blogData} = req.body
         const result = updateBlog(id, blogData)
         if (result) {
@@ -46,6 +51,7 @@ function bolgHandle (req, res) {
     }
     // 删除一篇博客
     if (req.method === 'POST' && req.path === '/api/blog/del') {
+        if (loginCheck(req, res)) return loginCheck(req, res);
         const { id, author } = req.body
         const result = delBlog(id, author)
         if (result) {
